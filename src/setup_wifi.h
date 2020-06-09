@@ -30,7 +30,7 @@ public:
 
 	virtual ~SetupWifi() = default;
 
-	WiFiClient & getWiFiClient()
+	WiFiClient &getWiFiClient()
 	{
 		return wifiClient;
 	}
@@ -40,7 +40,7 @@ public:
 		return (setClock_status > FINISHED);
 	}
 
-	String getMacAddress();
+	static String getMacAddress();
 	void setupWifi();
 	void loopWifi();
 
@@ -49,7 +49,7 @@ private:
 	const char *password;
 	const char *ca_cert_PROG;
 	const char *client_cert_PROG;
-	const char *client_key_PROG;	// KEEP THIS VALUE PRIVATE AND SECURE!!!
+	const char *client_key_PROG;    // KEEP THIS VALUE PRIVATE AND SECURE!!!
 
 	BearSSL::WiFiClientSecure wifiClient;
 	BearSSL::X509List x509CaCert;
@@ -59,7 +59,10 @@ private:
 	// Note: variables of type 'status' are NEVER assigned a value of 'FINISHED'.
 	// 'FINISHED' is only used if comparisons (e.g. if(x_status>FINISHED)... ),
 	// rather than always testing for SUCCESS || FAILED.
-	enum status { NOT_STARTED, STARTED, FINISHED, SUCCESS, FAILED };
+	enum status
+	{
+		NOT_STARTED, STARTED, FINISHED, SUCCESS, FAILED
+	};
 	status setClock_status = NOT_STARTED;
 	AsyncWait setClock_AsyncWait;
 
