@@ -31,6 +31,8 @@ SetupWifi setupWifi(
 	CLIENT_KEY_PROG
 );
 
+const char* mqtt_server = CONFIG.mqtt.mqtt_server;
+
 const char *ID = "sec_mqtt_client_" MAJOR_VER "_" MINOR_VER;	// Name of unique device
 const String TOPIC_PUMP("almond/pump");
 
@@ -197,13 +199,16 @@ void mqttCallback(char *topic, byte *payload, unsigned int payloadLength)
 
 void reconnectToMQTT(MilliSec currentMilliSec)
 {
+	const char* mqttUser = CONFIG.mqtt.mqtt_user;
+    const char* mqttPassword = CONFIG.mqtt.mqtt_password;
+
 	if (pubSubClient.connected()) return;
 
 	static AsyncWait waitToRetry;
 	if (waitToRetry.isWaiting(currentMilliSec)) return;
 
-	DEBUG_LOG("Attempting MQTT connection");
-	if (pubSubClient.connect(ID)) {
+	DEBUG_LOG("Attempting MQTT connection: ");
+	if (pubSubClient.connect(ID, mqttUser, mqttPassword)) {
 		DEBUG_LOGLN("Connected");
 
 		pubSubClient.subscribe(TOPIC_PUMP.c_str());
@@ -225,20 +230,20 @@ void loginToMQTT()
     pubSubClient.setServer(mqttServer, mqttPort);
     pubSubClient.setCallback(mqttCallback);
 
-    DEBUG_LOG("Starting MQTT...");
-    while (!pubSubClient.connected()) {
-        DEBUG_LOG("Connecting to MQTT...: ");
-        DEBUG_LOGLN(pubSubClient.state());
-        if (pubSubClient.connect(ID, mqttUser, mqttPassword)) {
-            DEBUG_LOG("Connected as :");
-            DEBUG_LOGLN(String(ID));
-        }
-        else {
-            Serial.println(&"Failed with state :" [ pubSubClient.state()]);
-            delay(1000);
-        }
-
-    }
+//    DEBUG_LOG("Starting MQTT...");
+//    while (!pubSubClient.connected()) {
+//        DEBUG_LOG("Connecting to MQTT...: ");
+//        DEBUG_LOGLN(pubSubClient.state());
+//        if (pubSubClient.connect(ID, mqttUser, mqttPassword)) {
+//            DEBUG_LOG("Connected as :");
+//            DEBUG_LOGLN(String(ID));
+//        }
+//        else {
+//            DEBUG_LOG("Failed with state: ");
+//            DEBUG_LOGLN(pubSubClient.state());
+//            delay(1000);
+//        }
+//    }
 }
 
 void setup()
@@ -252,13 +257,13 @@ void setup()
 #endif
 
 	pinMode(PIN_LED, OUTPUT);
+	pinMode(PIN_PUMP, OUTPUT);
 	setupWifi.setupWifi();
 
 	// Log in to mqtt server
 	loginToMQTT();
 
-	// SPI setup
-	// Set the Slave Select Pins as outputs
+	// SPI: Setup the Slave Select Pins as outputs
 	pinMode(slaveSelectPin, OUTPUT);
 	digitalWrite(slaveSelectPin, HIGH);
 	SPI.begin();

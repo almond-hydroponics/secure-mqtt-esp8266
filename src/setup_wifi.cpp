@@ -21,16 +21,16 @@ byte ip_dns[] = IPSET_DNS;
 
 const char* ntpServer1 = "pool.ntp.org";
 const char* ntpServer2 = "time.nist.gov";
-const long  gmtOffset_sec = 3600;
+const long  gmtOffset_sec = 10800;
 const int   daylightOffset_sec = 0;
 
 // Set time via NTP, as required for x.509 validation
 void SetupWifi::setClock()
 {
 	//void configTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2, const char* server3)
+	// https://lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 	// https://github.com/esp8266/Arduino/blob/master/cores/esp8266/time.cpp
-	configTime(3600,
-			   0,
+	configTime(gmtOffset_sec, daylightOffset_sec,
 			   "pool.ntp.org",
 			   "time.nist.gov",
 			   "time.windows.com"
@@ -46,12 +46,7 @@ void SetupWifi::setClock()
 void SetupWifi::checkClockStatus()
 {
 	time_t now = time(nullptr);
-//	while (now < 8 * 3600 * 2) {
-//		delay(500);
-//		DEBUG_LOG(".");
-//		now = time(nullptr);
-//	}
-	if (now < 8 * 3600 * 2) {
+	if (now < 3 * 3600 * 20) {
 		// The NTP request has not yet completed.
 		if (!setClock_AsyncWait.isWaiting(millis())) {
 			DEBUG_LOG(".");
@@ -108,23 +103,16 @@ void SetupWifi::setupWifi()
 
 		WiFi.mode(WIFI_STA);
 		wifiMulti.addAP(ssid, password);
-		WiFi.config(IPAddress(ip_static),
-					IPAddress(ip_gateway),
-					IPAddress(ip_subnet),
-					IPAddress(ip_dns));
 
 		int attempt = 0;
 		while (wifiMulti.run() != WL_CONNECTED) {
-			DEBUG_LOGLN("Connection Failed! Rebooting...");
 			wifiOnConnect();
 			DEBUG_LOG(".");
 			DEBUG_LOG(attempt);
 			delay(500);
 			attempt++;
-//			delay(5000);
-//			ESP.restart();
 
-			if (attempt == 150) {
+			if (attempt == 100) {
 				DEBUG_LOGLN("");
 				DEBUG_LOGLN("Could not connect to WiFi");
 

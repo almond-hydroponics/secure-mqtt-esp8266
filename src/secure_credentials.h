@@ -12,6 +12,7 @@ const char CLIENT_CERT_PROG[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 ... your certificate goes here ...
 -----END CERTIFICATE-----
+
 )EOF";
 
 // KEEP THIS VALUE PRIVATE AND SECURE!!!
